@@ -420,7 +420,10 @@ function obterWorker() {
 }
 
 async function ocrArquivo(file) {
-  mostrarErro(null) || escondeErro();
+  escondeErro();
+  if (typeof Tesseract === "undefined") {
+    throw new Error("Motor OCR (Tesseract.js) não carregou. Verifique a internet e recarregue a página.");
+  }
   mostraProgresso("Carregando motor OCR…", 0.05);
   const worker = await obterWorker();
   const { data } = await worker.recognize(file);
@@ -428,29 +431,48 @@ async function ocrArquivo(file) {
 }
 
 async function analisarArquivo(file, tipo) {
-  const usarOcr = $("modo-ocr").checked;
-  let extracao;
   try {
-    extracao = usarOcr ? await ocrArquivo(file) : null;
+    escondeErro();
+    if (/\.pdf$/i.test(file.name) || file.type === "application/pdf") {
+      throw new Error("PDF ainda não é suportado no navegador (o OCR local lê imagens). Converta para PNG/JPG ou use uma amostra abaixo.");
+    }
+    const usarOcr = $("modo-ocr").checked;
+    let extracao = null;
+    if (usarOcr) {
+      try {
+        extracao = await ocrArquivo(file);
+      } catch (e) {
+        console.warn("OCR falhou:", e);
+        extracao = null;
+      }
+    }
+    if (!extracao) {
+      const base = REFERENCIA[file.name];
+      if (base) {
+        extracao = { texto: base.texto, confiancaMedia: base.confiancaMedia, provedor: "referência (demo)" };
+        tipo = tipo || base.tipo;
+      } else {
+        throw new Error(
+          (usarOcr
+            ? "O OCR local não conseguiu ler este documento (motor indisponível ou imagem ilegível). "
+            : "Sem extração disponível para este arquivo. ") +
+          "Dicas: use uma imagem nítida (PNG/JPG), ative a opção 'OCR real', ou teste com uma amostra abaixo."
+        );
+      }
+    }
+    escondeProgresso();
+    const cadastro = $("modo-cadastro").checked ? CADASTRO : null;
+    const r = analisar(extracao.texto, tipo || null, file.name, cadastro, extracao);
+    r.extracao = extracao;
+    let hash = null;
+    try { hash = await sha256(file); } catch (e) { /* file:// ou contexto sem subtle */ }
+    renderRelatorio(r, hash, usarOcr ? "" : "modo referência (sem OCR)");
+    adicionarHistorico(r, hash);
   } catch (e) {
-    console.warn("OCR falhou:", e);
-    mostrarErro("⚠️ OCR indisponível no momento — usando extração de referência das amostras.");
-    extracao = null;
+    console.error("Falha na análise:", e);
+    escondeProgresso();
+    mostrarErro("⚠️ " + (e && e.message ? e.message : "Não foi possível analisar o documento. Tente novamente."));
   }
-  if (!extracao) {
-    const base = REFERENCIA[file.name];
-    if (!base) throw new Error("OCR indisponível e não há extração de referência para este arquivo.");
-    extracao = { texto: base.texto, confiancaMedia: base.confiancaMedia, provedor: "referência (demo)" };
-    tipo = tipo || base.tipo;
-  }
-  escondeProgresso();
-  const cadastro = $("modo-cadastro").checked ? CADASTRO : null;
-  const r = analisar(extracao.texto, tipo || null, file.name, cadastro, extracao);
-  r.extracao = extracao;
-  let hash = null;
-  try { hash = await sha256(file); } catch (e) { /* file:// sem subtle */ }
-  renderRelatorio(r, hash, usarOcr ? "" : "modo referência (sem OCR)");
-  adicionarHistorico(r, hash);
 }
 
 /* ─────────────────── Eventos ─────────────────── */
