@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛡️ DocShield AI — Análise Anti-fraude de Documentos</title>
+<meta name="description" content="Análise automatizada de documentos com IA para detectar padrões de fraude: CPF/CNPJ inválidos, datas impossíveis, inconsistências e adulterações. OCR 100% no navegador.">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-inner">
+    <div class="logo">🛡️ <span>DocShield <em>AI</em></span></div>
+    <nav>
+      <a href="https://github.com/everferreira/analise-documentos-anti-fraude-azureai" target="_blank" rel="noopener">GitHub</a>
+      <a href="#como-funciona">Como funciona</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Análise anti-fraude de <span>documentos</span> com IA</h1>
+    <p>OCR real no seu navegador + motor de regras brasileiro: valida CPF/CNPJ, cruza datas, confere valores e calcula o <b>score de risco</b> do documento. Nada sai da sua máquina. 🔒</p>
+  </section>
+
+  <section class="painel" id="painel">
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Enviar documento para análise">
+      <div class="dz-icone">📄</div>
+      <p><b>Arraste um documento aqui</b> ou clique para escolher</p>
+      <small>PNG · JPG · WebP · PDF (imagem) — análise local, sem upload</small>
+      <input type="file" id="arquivo" accept="image/*,.pdf" hidden>
+    </div>
+
+    <div class="amostras">
+      <span class="amostras-titulo">ou teste com um documento de exemplo:</span>
+      <div class="amostras-grid" id="amostras-grid"></div>
+    </div>
+
+    <div class="opcoes">
+      <label class="switch">
+        <input type="checkbox" id="modo-ocr" checked>
+        <span class="slider"></span>
+        <span class="switch-texto"><b>OCR real no navegador</b> <small>(Tesseract.js — mais lento, analisa de verdade)</small></span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="modo-cadastro" checked>
+        <span class="slider"></span>
+        <span class="switch-texto"><b>Cruzamento com cadastro</b> <small>(base de clientes fictícia)</small></span>
+      </label>
+    </div>
+
+    <div class="progresso" id="progresso" hidden>
+      <div class="progresso-barra"><div class="progresso-fill" id="progresso-fill"></div></div>
+      <div class="progresso-texto" id="progresso-texto">Iniciando OCR…</div>
+    </div>
+
+    <div id="erro" class="erro" hidden></div>
+
+    <div id="relatorio" hidden>
+      <div class="rel-cabecalho">
+        <div>
+          <h2 id="rel-arquivo">—</h2>
+          <p class="meta" id="rel-meta">—</p>
+        </div>
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 120 120" class="gauge">
+            <circle cx="60" cy="60" r="52" class="gauge-bg"/>
+            <circle cx="60" cy="60" r="52" class="gauge-fill" id="gauge-fill"/>
+          </svg>
+          <div class="gauge-num" id="gauge-num">—</div>
+          <div class="gauge-rotulo">risco</div>
+        </div>
+      </div>
+
+      <div class="selos">
+        <span class="selo selo-risco" id="selo-risco">—</span>
+        <span class="selo selo-parecer" id="selo-parecer">—</span>
+      </div>
+
+      <div class="grid-2">
+        <section class="card">
+          <h3>📋 Campos extraídos</h3>
+          <div id="rel-campos" class="campos"></div>
+        </section>
+        <section class="card">
+          <h3>🔍 Verificações anti-fraude</h3>
+          <ul id="rel-checks" class="checks"></ul>
+        </section>
+      </div>
+
+      <div class="impressao-digital" id="rel-hash"></div>
+    </div>
+
+    <section class="historico" id="historico" hidden>
+      <h3>🕘 Histórico desta sessão</h3>
+      <div id="historico-lista"></div>
+    </section>
+  </section>
+
+  <section class="como-funciona" id="como-funciona">
+    <h2>Como funciona</h2>
+    <div class="passos">
+      <div class="passo"><span class="passo-num">1</span><h4>OCR local</h4><p>O documento é lido pelo Tesseract.js direto no navegador — nenhuma imagem é enviada para servidor.</p></div>
+      <div class="passo"><span class="passo-num">2</span><h4>Extração de campos</h4><p>Nome, CPF, CNPJ, RG, datas, CEP, valores e itens são estruturados com padrões brasileiros.</p></div>
+      <div class="passo"><span class="passo-num">3</span><h4>Motor de regras</h4><p>Validação de dígitos verificadores, cronologia de datas, consistência com cadastro e conferência de somas.</p></div>
+      <div class="passo"><span class="passo-num">4</span><h4>Score de risco</h4><p>Cada falha soma peso (informação/aviso/crítico) e gera o parecer: Aprovado, Ressalvas ou Reprovado.</p></div>
+    </div>
+    <p class="nota-tecnica">Este produto demonstra o pipeline completo de <b>análise anti-fraude com Azure AI</b>: o mesmo motor roda com o provedor <b>Azure AI Document Intelligence</b> no CLI (ver repositório), enquanto o navegador usa OCR local para funcionar sem chave e sem custo.</p>
+  </section>
+</main>
+
+<footer>
+  <p>⌨️ com 💜 por <a href="https://github.com/everferreira" target="_blank" rel="noopener">Ever Ferreira</a> — Desafio IA-102 · Microsoft Certification (DIO)</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

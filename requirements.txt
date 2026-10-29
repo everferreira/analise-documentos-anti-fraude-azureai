@@ -1,0 +1,3 @@
+# Dependências do CLI (nenhuma é obrigatória: sem elas, use --extractor demo)
+rapidocr-onnxruntime>=1.4   # OCR local real (modo local)
+pillow>=10.0                # geração de amostras (scripts/gerar_amostras.py)
