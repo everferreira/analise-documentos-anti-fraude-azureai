@@ -1,10 +1,17 @@
 /* ═══════════════════════════════════════════════════════════════════════
    DocShield AI — Análise anti-fraude de documentos no navegador
    Motor JS espelha src/anti_fraude/*.py (mesmas regras, pesos e thresholds).
-   OCR: Tesseract.js (local, sem upload). Fallback: extração de referência.
+   OCR: Tesseract.js auto-hospedado (vendor/) — sem dependência de CDN, offline.
    ═══════════════════════════════════════════════════════════════════════ */
 
 "use strict";
+
+/* ─── Paths do Tesseract.js (self-hosted — tudo em vendor/) ─── */
+if (typeof Tesseract !== "undefined") {
+  Tesseract.workerPath = "vendor/worker.min.js";
+  Tesseract.corePath = "vendor/tesseract-core-simd.wasm.js";
+  Tesseract.langPath = "vendor/tessdata";
+}
 
 /* ───────────────────────── Utilidades ───────────────────────── */
 const soDigitos = (v) => (v || "").replace(/\D/g, "");
